@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: dim_member
+    description: "Current-state member dimension with age band."
+    columns:
+      - name: member_id
+        data_tests: [unique, not_null]
+      - name: age_band
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["0-17", "18-39", "40-64", "65+"]
+
+  - name: dim_provider
+    description: "Provider dimension keyed on NPI."
+    columns:
+      - name: provider_npi
+        data_tests: [unique, not_null]
+
+  - name: fct_claims
+    description: >
+      Claim-grain fact table, incremental (merge on claim_id) with a 3-day
+      lookback so late-arriving corrections are picked up.
+    columns:
+      - name: claim_id
+        data_tests: [unique, not_null]
+      - name: member_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_member')
+                field: member_id
+      - name: provider_npi
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_provider')
+                field: provider_npi
+      - name: paid_amount
+        data_tests: [non_negative]
+      - name: allowed_amount
+        data_tests: [non_negative]
+
+  - name: mart_plan_monthly_summary
+    description: "Plan x month KPIs: member months, paid PMPM, utilisation per 1,000, denial rate."
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ["plan_code", "month_start"]
+    columns:
+      - name: member_months
+        data_tests: [not_null, non_negative]
+      - name: paid_pmpm
+        data_tests: [non_negative]

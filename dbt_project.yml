@@ -1,0 +1,52 @@
+name: payer_claims
+version: "1.0.0"
+config-version: 2
+
+profile: payer_claims
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+analysis-paths: ["analyses"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # claims older than this are ignored everywhere (reporting window)
+  reporting_start_date: "2024-01-01"
+
+seeds:
+  payer_claims:
+    +schema: raw
+    raw_members:
+      +column_types:
+        member_id: varchar(10)
+        coverage_end_date: date
+    raw_providers:
+      +column_types:
+        provider_npi: varchar(10)
+    raw_claims:
+      +column_types:
+        provider_npi: varchar(10)
+        paid_date: date
+        claim_status: varchar(20)
+        denial_reason: varchar(40)
+
+models:
+  payer_claims:
+    staging:
+      +schema: staging
+      +materialized: view
+    intermediate:
+      +schema: intermediate
+      +materialized: ephemeral
+    marts:
+      +schema: marts
+      +materialized: table
+
+snapshots:
+  payer_claims:
+    +schema: snapshots

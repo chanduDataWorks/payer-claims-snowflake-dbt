@@ -1,0 +1,71 @@
+version: 2
+
+models:
+  - name: stg_members
+    description: "One row per health plan member, cleaned and typed."
+    columns:
+      - name: member_id
+        description: "Plan-assigned member identifier."
+        data_tests: [unique, not_null]
+      - name: plan_code
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["HMO_GOLD", "HMO_SILVER", "PPO_GOLD", "PPO_SILVER", "MEDICARE_ADV"]
+      - name: gender
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["M", "F", "U"]
+      - name: coverage_start_date
+        data_tests: [not_null]
+
+  - name: stg_providers
+    description: "One row per rendering/billing provider, keyed on NPI."
+    columns:
+      - name: provider_npi
+        description: "10-digit National Provider Identifier."
+        data_tests: [unique, not_null]
+      - name: provider_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["PCP", "SPECIALIST", "FACILITY", "PHARMACY"]
+
+  - name: stg_claims
+    description: >
+      One row per claim. Resubmissions are collapsed to the latest version
+      (by loaded_at) and statuses are standardised.
+    columns:
+      - name: claim_id
+        data_tests: [unique, not_null]
+      - name: member_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_members')
+                field: member_id
+      - name: provider_npi
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_providers')
+                field: provider_npi
+      - name: claim_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["PROF", "INST", "RX"]
+      - name: claim_status
+        description: "PAID, DENIED or PENDING after standardisation."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["PAID", "DENIED", "PENDING"]
+      - name: billed_amount
+        data_tests: [not_null, non_negative]
+      - name: paid_amount
+        data_tests: [not_null, non_negative]

@@ -1,0 +1,14 @@
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+
+# local credentials and databases - never commit
+profiles.yml
+*.duckdb
+*.duckdb.wal
+.env
+
+# python
+__pycache__/
+.venv/

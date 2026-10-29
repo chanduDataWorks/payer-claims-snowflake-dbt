@@ -1,0 +1,29 @@
+# Copy this file to profiles.yml in this folder (it is git-ignored) and run dbt
+# with --profiles-dir . . Never commit real credentials or keys.
+#
+#   target: dev    -> your Snowflake account, key-pair authentication
+#   target: local  -> DuckDB file on your laptop (no cloud account needed)
+#
+# Why key-pair and not password? Snowflake is deprecating single-factor
+# password login for human users, and password + MFA would send a push
+# notification for every dbt connection. Key-pair auth is non-interactive.
+
+payer_claims:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"               # e.g. ABCDEFG-XY12345 (orgname-accountname)
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"   # full path to rsa_key.p8
+      role: TRANSFORMER
+      warehouse: TRANSFORM_WH
+      database: PAYER_CLAIMS
+      schema: DEV
+      threads: 4
+
+    local:
+      type: duckdb
+      path: payer_claims.duckdb
+      schema: dev
+      threads: 4
