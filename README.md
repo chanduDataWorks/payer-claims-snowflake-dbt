@@ -157,7 +157,7 @@ python scripts/generate_data.py
 
 ## Results
 
-Run `dbt build` to get 50 nodes (3 seeds, 7 models, 1 snapshot, 39 tests), all passing.
+Run `dbt build` to get 50 nodes (3 seeds, 7 built models plus 1 ephemeral model, 1 snapshot, 39 tests), all passing.
 
 Sample output from `mart_plan_monthly_summary`:
 
